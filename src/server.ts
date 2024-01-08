@@ -8,13 +8,16 @@ import hpp from 'hpp';
 import { StatusCodes } from 'http-status-codes';
 import { Logger } from 'winston';
 import http from 'http';
+import { Config } from '@gateway/config';
+import { appRoutes } from './routes';
 
 export class GatewayServer {
   private SERVER_PORT = 4000;
   private httpServer: http.Server;
   constructor(
     private app: Application,
-    private logger: Logger
+    private logger: Logger,
+    private config: Config
   ) {
     this.httpServer = new http.Server(this.app);
   }
@@ -33,9 +36,9 @@ export class GatewayServer {
     this.app.use(
       cookieSession({
         name: 'jobber-session',
-        keys: [],
+        keys: [`${this.config.SECRET_KEY_ONE}`, `${this.config.SECRET_KEY_TWO}`],
         maxAge: 24 * 7 * 3600000,
-        secure: false
+        secure: this.config.NODE_ENV !== 'development',
         //sameSite: none
       })
     );
@@ -43,7 +46,7 @@ export class GatewayServer {
     this.app.use(helmet());
     this.app.use(
       cors({
-        origin: '',
+        origin: this.config.CLIENT_URL,
         credentials: true,
         methods: ['GET', 'POST', 'DELETE', 'OPTIONS']
       })
@@ -56,9 +59,11 @@ export class GatewayServer {
     this.app.use(urlencoded({ extended: true, limit: '200mb' }));
   }
 
-  private routeMiddleware(): void {}
+  private routeMiddleware(): void {
+    appRoutes(this.app);
+  }
 
-  private startElasticSearch(): void {}
+  private startElasticSearch(): void { }
 
   private errorHandler(): void {
     this.app.use('*', (req: Request, res: Response, next: NextFunction) => {

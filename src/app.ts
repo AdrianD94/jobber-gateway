@@ -2,12 +2,21 @@ import express from 'express';
 import { GatewayServer } from './server';
 import { winstonLogger } from '@adriand94/jobber-shared';
 import { Logger } from 'winston';
+import { Config } from '@gateway/config';
+import { Client } from '@elastic/elasticsearch';
+import { ElasticSearch } from './elasticsearch';
 
 class Application {
   public async initialize(): Promise<void> {
-    const log: Logger = winstonLogger(`http://localhost:9200`, 'notificationServer', 'debug');
+    const config: Config = new Config();
+  
+    const log: Logger = winstonLogger(`${config.ELASTIC_SEARCH_URL}`, 'GatewayServer', 'debug');
+    const esClient: Client = new Client({ node: `${config.ELASTIC_SEARCH_URL}` });
+    const elasticSearch: ElasticSearch = new ElasticSearch(esClient, log);
+    await elasticSearch.checkConnection();
+
     const app = express();
-    const gatewayServer = new GatewayServer(app, log);
+    const gatewayServer = new GatewayServer(app, log, config);
     await gatewayServer.start();
   }
 }
