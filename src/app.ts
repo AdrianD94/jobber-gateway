@@ -6,20 +6,16 @@ import { Config } from '@gateway/config';
 import { Client } from '@elastic/elasticsearch';
 import { ElasticSearch } from './elasticsearch';
 
-class Application {
-  public async initialize(): Promise<void> {
-    const config: Config = new Config();
-  
-    const log: Logger = winstonLogger(`${config.ELASTIC_SEARCH_URL}`, 'GatewayServer', 'debug');
-    const esClient: Client = new Client({ node: `${config.ELASTIC_SEARCH_URL}` });
-    const elasticSearch: ElasticSearch = new ElasticSearch(esClient, log);
-    await elasticSearch.checkConnection();
+async function initialize(): Promise<void> {
+  const config = new Config();
+  const log: Logger = winstonLogger(`${config.ELASTIC_SEARCH_URL}`, 'GatewayServer', 'debug');
+  const esClient: Client = new Client({ node: `${config.ELASTIC_SEARCH_URL}` });
+  const elasticSearch: ElasticSearch = new ElasticSearch(esClient, log);
+  await elasticSearch.checkConnection();
 
-    const app = express();
-    const gatewayServer = new GatewayServer(app, log, config);
-    await gatewayServer.start();
-  }
+  const app = express();
+  const gatewayServer = new GatewayServer(app, log, config);
+  await gatewayServer.start();
 }
 
-const application = new Application();
-application.initialize();
+initialize()

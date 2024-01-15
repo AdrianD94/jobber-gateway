@@ -1,15 +1,7 @@
-import { HealthController } from '@gateway/controllers/HealthController';
-import express, { Request, Response, Router } from 'express';
+import { healthController } from '@gateway/controllers/health';
+import express, { Request, Response } from 'express';
 
-export class HealthRoutes {
-    private router: Router;
+const healthRouter = express.Router();
+healthRouter.get('/gateway-health', (request: Request, response: Response) => healthController.health(request, response))
 
-    constructor() {
-        this.router = express.Router();
-    }
-
-    public routes(): Router {
-        this.router.get('/gateway-health', (request:Request, response:Response) => new HealthController().health(request, response))
-        return this.router;
-    }
-}
+export { healthRouter };

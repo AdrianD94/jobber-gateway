@@ -19,7 +19,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@adriand94/jobber-shared": "^0.0.1",
+    "@adriand94/jobber-shared": "^0.0.4",
     "@elastic/elasticsearch": "^8.11.0",
     "axios": "^1.6.4",
     "bcrypt": "^5.1.1",

@@ -10,6 +10,7 @@ import { Logger } from 'winston';
 import http from 'http';
 import { Config } from '@gateway/config';
 import { appRoutes } from './routes';
+import { axiosAuthService } from './controllers/auth';
 
 export class GatewayServer {
   private SERVER_PORT = 4000;
@@ -17,7 +18,7 @@ export class GatewayServer {
   constructor(
     private app: Application,
     private logger: Logger,
-    private config: Config
+    private config: Config,
   ) {
     this.httpServer = new http.Server(this.app);
   }
@@ -51,6 +52,12 @@ export class GatewayServer {
         methods: ['GET', 'POST', 'DELETE', 'OPTIONS']
       })
     );
+    this.app.use((req: Request, _res: Response, next: NextFunction) => {
+      if (req.session?.jwt) {
+        axiosAuthService.axios.defaults.headers['Authorization'] = `Bearer ${req.session?.jwt}`
+      }
+      next();
+    })
   }
 
   private standarMiddleware(): void {
