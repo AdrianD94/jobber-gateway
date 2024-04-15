@@ -3,7 +3,7 @@ import { Config } from '@gateway/config';
 import axios from 'axios';
 import { sign } from 'jsonwebtoken';
 
-export class AxiosService {
+export class  AxiosService {
     public axios: ReturnType<typeof axios.create>;
 
     constructor(private baseUrl: string, private serviceName: string, private config: Config) {

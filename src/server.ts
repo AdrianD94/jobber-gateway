@@ -8,17 +8,19 @@ import hpp from 'hpp';
 import { StatusCodes } from 'http-status-codes';
 import { Logger } from 'winston';
 import http from 'http';
-import { Config } from '@gateway/config';
+import { config } from '@gateway/config';
 import { appRoutes } from './routes';
 import { axiosAuthService } from './controllers/auth';
+import { isAxiosError } from 'axios';
+
+const DEFAULT_ERROR_CODE = 500;
 
 export class GatewayServer {
   private SERVER_PORT = 4000;
   private httpServer: http.Server;
   constructor(
     private app: Application,
-    private logger: Logger,
-    private config: Config,
+    private logger: Logger
   ) {
     this.httpServer = new http.Server(this.app);
   }
@@ -37,9 +39,9 @@ export class GatewayServer {
     this.app.use(
       cookieSession({
         name: 'jobber-session',
-        keys: [`${this.config.SECRET_KEY_ONE}`, `${this.config.SECRET_KEY_TWO}`],
+        keys: [`${config.SECRET_KEY_ONE}`, `${config.SECRET_KEY_TWO}`],
         maxAge: 24 * 7 * 3600000,
-        secure: this.config.NODE_ENV !== 'development',
+        secure: config.NODE_ENV !== 'development',
         //sameSite: none
       })
     );
@@ -47,7 +49,7 @@ export class GatewayServer {
     this.app.use(helmet());
     this.app.use(
       cors({
-        origin: this.config.CLIENT_URL,
+        origin: config.CLIENT_URL,
         credentials: true,
         methods: ['GET', 'POST', 'DELETE', 'OPTIONS']
       })
@@ -80,8 +82,13 @@ export class GatewayServer {
       next();
     });
     this.app.use((error: IErrorResponse, _req: Request, res: Response, next: NextFunction) => {
-      this.logger.log('error', `GatewayService ${error.comingFrom}:`, error);
+      if (isAxiosError(error)) {
+        this.logger.log('error', `GatewayService Axios Error - ${error?.response?.data?.comingFrom}:`, error);
+        res.status(error?.response?.data?.statusCode ?? DEFAULT_ERROR_CODE).json({ message: error?.response?.data?.message ?? 'Error occurred.' });
+      }
+      // this.logger.log('error', `GatewayService ${error.comingFrom}:`, error);
       if (error instanceof CustomError) {
+        console.log(error);
         res.status(error.statusCode).json(error.serializeError());
       }
       next();
