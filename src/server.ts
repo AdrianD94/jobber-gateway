@@ -8,9 +8,10 @@ import hpp from 'hpp';
 import { StatusCodes } from 'http-status-codes';
 import { Logger } from 'winston';
 import { config } from '@gateway/config';
-import { axiosAuthService } from './controllers/auth';
+// import { axiosAuthService } from './controllers/auth';
 import { isAxiosError } from 'axios';
 import { IController } from './controllers/auth/AuthController';
+import { AxiosService } from './services/axios';
 
 const DEFAULT_ERROR_CODE = 500;
 
@@ -21,7 +22,8 @@ export class GatewayServer {
   constructor(
     private app: Application,
     private logger: Logger,
-    private controllers: IController[]
+    private controllers: IController[],
+    private axiosAuthService: AxiosService
   ) {
 
   }
@@ -57,7 +59,7 @@ export class GatewayServer {
     );
     this.app.use((req: Request, _res: Response, next: NextFunction) => {
       if (req.session?.jwt) {
-        axiosAuthService.axios.defaults.headers['Authorization'] = `Bearer ${req.session?.jwt}`
+        this.axiosAuthService.axios.defaults.headers['Authorization'] = `Bearer ${req.session?.jwt}`
       }
       next();
     })

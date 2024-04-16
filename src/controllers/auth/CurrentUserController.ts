@@ -14,7 +14,9 @@ export class CurrentUserController implements IController {
     }
     public initializeRotues() {
         this.router.get(`${this.path}/current-user`, this.authMiddleware.verifyUser, this.authMiddleware.checkAuthentication, this.getCurrentUser.bind(this));
-        this.router.get(`${this.path}/refresh-token/:username`, this.authMiddleware.verifyUser, this.authMiddleware.checkAuthentication, this.resendEmail.bind(this));
+        this.router.get(`${this.path}/refresh-token/:username`, this.authMiddleware.verifyUser, this.authMiddleware.checkAuthentication, this.token.bind(this));
+        this.router.post(`${this.path}/resend-email`, this.authMiddleware.verifyUser, this.authMiddleware.checkAuthentication, this.resendEmail.bind(this));
+        
     }
 
     private async getCurrentUser(_req: Request, res: Response): Promise<void> {   
@@ -25,4 +27,10 @@ export class CurrentUserController implements IController {
         const response: AxiosResponse = await this.authService.resendEmail(req.body);
         res.status(StatusCodes.OK).json({ message: response.data.message, user: response.data.user });
     }
+
+    public async token(req: Request, res: Response): Promise<void> {
+        const response: AxiosResponse = await this.authService.getRefreshToken(req.params.username);
+        req.session = { jwt: response.data.token };
+        res.status(StatusCodes.OK).json({ message: response.data.message, user: response.data.user });
+      }
 }

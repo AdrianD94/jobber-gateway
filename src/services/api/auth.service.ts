@@ -27,10 +27,9 @@ export class AuthService {
         const response = await this.axiosService.axios.put(`/change-password`, { currentPassword, newPassword });
         return response;
     }
-    async getCurrentUser(): Promise<any> {
-        console.log(this.axiosService.axios.defaults.headers);
-        // const response: AxiosResponse = await this.axiosService.axios.get('/current-user');
-        // return response;
+    async getCurrentUser(): Promise<AxiosResponse> {
+        const response: AxiosResponse = await this.axiosService.axios.get('/current-user');
+        return response;
       }
 
       async resendEmail(data: { userId: number, email: string }): Promise<AxiosResponse> {

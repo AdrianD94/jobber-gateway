@@ -24,13 +24,16 @@ async function initialize(): Promise<void> {
   const axiosAuthService = new AxiosService(`${config.AUTH_BASE_URL}/api/v1/auth`, 'auth', config);
   const authService = new AuthService(axiosAuthService);
   const authController = new AuthController(authService);
-
   const healthController = new HealthController();
 
   const authMiddleware = new AuthMiddleware();
   const currentUserController = new CurrentUserController(authService, authMiddleware);
 
-  const gatewayServer = new GatewayServer(app, log, [authController, healthController, currentUserController]);
+  const gatewayServer = new GatewayServer(
+    app,
+    log,
+    [authController, healthController, currentUserController],
+    axiosAuthService);
   await gatewayServer.start();
 }
 
