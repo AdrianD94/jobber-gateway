@@ -7,28 +7,29 @@ import helmet from 'helmet';
 import hpp from 'hpp';
 import { StatusCodes } from 'http-status-codes';
 import { Logger } from 'winston';
-import http from 'http';
 import { config } from '@gateway/config';
-import { appRoutes } from './routes';
 import { axiosAuthService } from './controllers/auth';
 import { isAxiosError } from 'axios';
+import { IController } from './controllers/auth/AuthController';
 
 const DEFAULT_ERROR_CODE = 500;
 
 export class GatewayServer {
   private SERVER_PORT = 4000;
-  private httpServer: http.Server;
+  
+  private BASE_PATH: string = '/api/gateway/v1'
   constructor(
     private app: Application,
-    private logger: Logger
+    private logger: Logger,
+    private controllers: IController[]
   ) {
-    this.httpServer = new http.Server(this.app);
+
   }
 
   public async start(): Promise<void> {
     this.securityMiddleware();
     this.standarMiddleware();
-    this.routeMiddleware();
+    this.initializeControllers(this.controllers);
     this.startElasticSearch();
     this.errorHandler();
     await this.startHttpServer();
@@ -68,9 +69,12 @@ export class GatewayServer {
     this.app.use(urlencoded({ extended: true, limit: '200mb' }));
   }
 
-  private routeMiddleware(): void {
-    appRoutes(this.app);
+  private initializeControllers(controllers: IController[]) {
+    controllers.forEach((controller) => {
+      this.app.use(`${this.BASE_PATH}`, controller.router);
+    });
   }
+
 
   private startElasticSearch(): void { }
 
@@ -98,7 +102,7 @@ export class GatewayServer {
   private async startHttpServer(): Promise<void> {
     try {
       this.logger.info(`Worker with process id of ${process.pid} on gateway server has started`);
-      this.httpServer.listen(this.SERVER_PORT, () => {
+      this.app.listen(this.SERVER_PORT, () => {
         this.logger.info(`Gateway server running on port ${this.SERVER_PORT}`);
       });
     } catch (error) {

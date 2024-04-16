@@ -21,6 +21,7 @@ export class AuthMiddleware {
     }
 
     public checkAuthentication(req: Request, _response: Response, next: NextFunction): void {
+        console.log(req.currentUser);
         if (!req.currentUser) {
             throw new BadRequestError('Authetication required to access this route', 'GatewayService checkAuthentication()');
         }
