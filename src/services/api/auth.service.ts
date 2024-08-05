@@ -23,21 +23,33 @@ export class AuthService {
         const response = await this.axiosService.axios.put(`/reset-password/${token}`, { password, confirmPassword });
         return response;
     }
-    async changePassword( currentPassword: string, newPassword: string): Promise<AxiosResponse> {
+    async changePassword(currentPassword: string, newPassword: string): Promise<AxiosResponse> {
         const response = await this.axiosService.axios.put(`/change-password`, { currentPassword, newPassword });
         return response;
     }
     async getCurrentUser(): Promise<AxiosResponse> {
         const response: AxiosResponse = await this.axiosService.axios.get('/current-user');
         return response;
-      }
+    }
 
-      async resendEmail(data: { userId: number, email: string }): Promise<AxiosResponse> {
+    async resendEmail(data: { userId: number, email: string }): Promise<AxiosResponse> {
         const response: AxiosResponse = await this.axiosService.axios.post('/resend-email', data);
         return response;
-      }
-      async getRefreshToken(username: string): Promise<AxiosResponse> {
+    }
+    async getRefreshToken(username: string): Promise<AxiosResponse> {
         const response: AxiosResponse = await this.axiosService.axios.get(`/refresh-token/${username}`);
         return response;
-      }
+    }
+    async getGigs(query: string, from: string, size: string, type: string): Promise<AxiosResponse> {
+        const response: AxiosResponse = await this.axiosService.axios.get(`/search/gig/${from}/${size}/${type}?${query}`);
+        return response;
+    }
+    async getGig(gigId: string): Promise<AxiosResponse> {
+        const response: AxiosResponse = await this.axiosService.axios.get(`/search/gig/${gigId}`);
+        return response;
+    }
+    async seed(count: string): Promise<AxiosResponse> {
+        const response: AxiosResponse = await this.axiosService.axios.put(`/seed/${count}`);
+        return response;
+    }
 }

@@ -12,6 +12,8 @@ import { AuthService } from './services/api/auth.service';
 import { HealthController } from './controllers/health/HealthController';
 import { AuthMiddleware } from './services/auth-middleware';
 import { CurrentUserController } from './controllers/auth/CurrentUserController';
+import { SearchController } from './controllers/search/SearchController';
+import { SeedController } from './controllers/seed/SeedController';
 
 async function initialize(): Promise<void> {
   const log: Logger = winstonLogger(`${config.ELASTIC_SEARCH_URL}`, 'GatewayServer', 'debug');
@@ -29,10 +31,13 @@ async function initialize(): Promise<void> {
   const authMiddleware = new AuthMiddleware();
   const currentUserController = new CurrentUserController(authService, authMiddleware);
 
+  const searchController = new SearchController(authService);
+  const seedController = new SeedController(authService);
+
   const gatewayServer = new GatewayServer(
     app,
     log,
-    [authController, healthController, currentUserController],
+    [authController, healthController, currentUserController, searchController, seedController],
     axiosAuthService);
   await gatewayServer.start();
 }
